@@ -1,17 +1,17 @@
 // Your tests go in here. Happy coding! 🤓
 
 describe('Ticket Form', () => {
+    const licence_id = 13329102
+    const testName = 'Test Name'
+    const testEmail = 'test@email.com'
+    const testSubject = 'Test Subject'
+    const testMessage = 'Test Message'
+
     beforeEach(() => {
         cy.visit('/')
     })
 
     it('User receives Thank you! message after submitting the form with valid values', () => {
-        const licence_id = 13329102
-        const testName = 'Test Name'
-        const testEmail = 'test@email.com'
-        const testSubject = 'Test Subject'
-        const testMessage = 'Test Message'
-
         cy.intercept('POST', '/v2/tickets/new', {
             statusCode: 200,
             body: {
@@ -40,5 +40,22 @@ describe('Ticket Form', () => {
             })
         })
         cy.get('h1').should('contain', 'Thank you!')
+    })
+
+    it('User receives error message if submit request fails', () => {
+        cy.intercept('POST', '/v2/tickets/new', {
+            statusCode: 500,
+            body: {
+                error: 'Internal server error',
+            },
+        })
+
+        cy.get('#name').type(testName)
+        cy.get('#email').type(testEmail)
+        cy.get('#subject').type(testSubject)
+        cy.get('#message').type(testMessage)
+        cy.contains('button', 'Submit').click()
+
+        cy.get('h1').should('contain', 'Error!')
     })
 })
